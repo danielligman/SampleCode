@@ -24,7 +24,6 @@ class UnitTest {
 		// detect the internal faces ... storing them as Polygon(s) within Data class
 		data.detectFaces();
 
-		// iterate the faces and call your own drawFace() function defined elsewhere
 		if(data.faces.length != result.length)
 			return false;
 
@@ -57,7 +56,6 @@ class UnitTest {
 		// detect the internal faces ... storing them as Polygon(s) within Data class
 		data.detectFaces();
 
-		// iterate the faces and call your own drawFace() function defined elsewhere
 		if(data.faces.length != result.length)
 			return false;
 
