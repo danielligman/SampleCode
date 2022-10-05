@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<title></title>
+	<link rel="stylesheet" href="higharc.css"/>
+	<script src="higharc.js"></script>
+	<script src="unittest.js"></script>
+	<script>
+		function initJson() {
+			let content = "{\n";
+			content += "  \"vertices\": [[0, 0], [2, 0], [2, 2], [0, 2]],\n"
+			content += "  \"edges\": [[0, 1], [1, 2], [0, 2], [0, 3], [2, 3]]\n";
+			content += "}\n";
+			return content;
+		}
+
+		function initDraw(data, bounds) {
+			// clear the SVG
+			document.getElementById('HigharcModelDisplay').innerHTML = "";
+	    }
+
+		function modelCoordToScreenCoordString(face, bounds, svgHeight, scale) {
+			var pointsAsHTML = "";
+			face.vertices.forEach(vertex => {
+				var xVal = (vertex.x-bounds.X.min) * scale;
+				var yVal = svgHeight - ((vertex.y-bounds.Y.min) * scale);
+				pointsAsHTML += xVal.toString() + "," + yVal.toString()  + " ";
+			});
+			return pointsAsHTML;
+		}
+
+		function drawFaces(data, bounds) {
+			// TODO: WebGL is the ideal way to go here, and this is just a simple mockup
+
+			var height = document.getElementById('HigharcModelDisplay').offsetHeight;
+			var width = document.getElementById('HigharcModelDisplay').offsetHeight;
+
+			// calculate the scale 
+			var scaleX = width/(bounds.X.max-bounds.X.min);
+			var scaleY = height/(bounds.Y.max-bounds.Y.min);
+			var scale = Math.min(scaleX, scaleY);
+
+			var html = 	"<svg height=\"" + height.toString() + "\" width=\"" + width.toString() + "\">\n";
+			data.faces.forEach(face => {
+				var color = "#" + (Math.floor(Math.random()*16777215).toString(16));
+				var str = "<polygon points=\"";
+				str += modelCoordToScreenCoordString(face, bounds, height, scale);
+				str += "\" style=\"fill:" + color + ";stroke:black;stroke-width:1\" />\n";
+				html += str;
+			});
+			html += "</svg>\n";
+			document.getElementById('HigharcModelDisplay').innerHTML = html;
+
+	    }
+
+		function updatePolygons(content){
+			var data = Utilities.parseJson(content);	
+
+			// calculate the bounds to assist in the graphics
+			var bounds = data.detectBounds();
+
+			initDraw(bounds);
+
+			// detect the polygons/faces in the data
+			data.detectFaces();
+
+			// draw the polygons/faces
+			drawFaces(data, bounds);
+
+			return data;
+		}
+
+		// Use the json to populate the data Object form which the polygons can be detected
+		function updateAdjacent(content) {
+			// update the data structure to prepare for alg #2
+			var data = updatePolygons(content);
+
+			var summary = "Adjacent Faces\n"
+			data.faces.forEach(face => {
+				var adjacent = data.detectAdjacentFaces(face.id);
+				summary += "   Face: " + face.id.toString() + ",  Adjacent: "
+				adjacent.forEach(face => {
+					summary += face.id.toString() + " ";
+				});
+				summary += "\n";
+			});
+
+			// TODO: Display the Adjacent Polygons ...
+			//   Perhaps these ought to be displayed via color
+			//     but display as a simple alert for now
+
+			alert(summary);
+
+			// UnitTest can be added here simply to verify it works
+			//    ... or as a separate button
+			// UnitTest.testAll();
+
+	    }
+
+	</script>
+
+</head>
+
+<body id ="HigharcOuterPage">
+	<div id ="HigharcInnerPage">
+	<div id="HigharcSpacer"></div>
+	<span id="HigharcTitle"><big>Higharc Algorithm Test</big></span>
+	<div id="HigharcSpacer"></div>
+	<div id="HigharcContent" style="clear:both">
+		<form action="">
+			<label for="text">JSON data:</label>
+			<br>
+			<textarea id="jsonText" name="text" rows="12" cols="100"></textarea>
+			<br/>
+			<input type="button" value="Compute Faces" onclick="javascript:updatePolygons(document.getElementById('jsonText').value);"/>
+			<input type="button" value="Adjacent Faces" onclick="javascript:updateAdjacent(document.getElementById('jsonText').value);"/>
+		</form>
+		<script>
+			document.getElementById('jsonText').value = initJson();
+		</script>
+	</div>
+	<div id="HigharcSpacer"></div>
+	<div id="HigharcModelDisplay">
+	</div>
+	
+</body>
+
+</html>
